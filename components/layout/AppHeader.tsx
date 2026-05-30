@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui";
+import { useEffect } from "react";
+import { Button, Select } from "@/components/ui";
+import { useUIStore, type Theme } from "@/lib/store/ui-store";
+import { useQueryStore } from "@/lib/store/query-store";
+import { SCHEMA_LIST } from "@/lib/schema/schemas";
 
 function MoonIcon() {
   return (
@@ -46,35 +49,24 @@ function SunIcon() {
 }
 
 export function AppHeader() {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
-  const [mounted, setMounted] = useState(false);
+  const theme = useUIStore((s) => s.theme);
+  const setTheme = useUIStore((s) => s.setTheme);
+  const toggleTheme = useUIStore((s) => s.toggleTheme);
 
+  const activeSchemaKey = useQueryStore((s) => s.activeSchemaKey);
+  const setSchema = useQueryStore((s) => s.setSchema);
+
+  // Restore the saved theme once on the client. The server and first client
+  // render both use the default ("light"), so this never causes a mismatch.
   useEffect(() => {
-    setMounted(true);
-    const saved = localStorage.getItem("vantage-theme") as
-      | "light"
-      | "dark"
-      | null;
-    if (saved) {
-      setTheme(saved);
-      document.documentElement.setAttribute("data-theme", saved);
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const next = theme === "light" ? "dark" : "light";
-    setTheme(next);
-    document.documentElement.setAttribute("data-theme", next);
-    localStorage.setItem("vantage-theme", next);
-  };
+    const saved = localStorage.getItem("vantage-theme") as Theme | null;
+    if (saved) setTheme(saved);
+  }, [setTheme]);
 
   return (
     <header
       className="h-11 shrink-0 flex items-center justify-between px-4 border-b"
-      style={{
-        background: "var(--surface)",
-        borderColor: "var(--border)",
-      }}
+      style={{ background: "var(--surface)", borderColor: "var(--border)" }}
     >
       {/* Brand */}
       <div className="flex items-center gap-3">
@@ -90,23 +82,42 @@ export function AppHeader() {
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-1">
-        {mounted && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleTheme}
-            aria-label="Toggle theme"
-            title={
-              theme === "light" ? "Switch to dark mode" : "Switch to light mode"
-            }
+      <div className="flex items-center gap-2">
+        <label className="flex items-center gap-1.5">
+          <span
+            className="text-[10px] font-semibold uppercase tracking-widest hidden sm:block"
+            style={{ color: "var(--text-muted)" }}
           >
-            {theme === "light" ? <MoonIcon /> : <SunIcon />}
-            <span className="hidden sm:inline text-xs">
-              {theme === "light" ? "Dark" : "Light"}
-            </span>
-          </Button>
-        )}
+            Dataset
+          </span>
+          <Select
+            value={activeSchemaKey}
+            onChange={(e) => setSchema(e.target.value)}
+            className="h-7 w-32"
+            aria-label="Active dataset"
+          >
+            {SCHEMA_LIST.map((schema) => (
+              <option key={schema.key} value={schema.key}>
+                {schema.label}
+              </option>
+            ))}
+          </Select>
+        </label>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleTheme}
+          aria-label="Toggle theme"
+          title={
+            theme === "light" ? "Switch to dark mode" : "Switch to light mode"
+          }
+        >
+          {theme === "light" ? <MoonIcon /> : <SunIcon />}
+          <span className="hidden sm:inline text-xs">
+            {theme === "light" ? "Dark" : "Light"}
+          </span>
+        </Button>
       </div>
     </header>
   );
