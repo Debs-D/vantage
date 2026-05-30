@@ -95,3 +95,21 @@ body {
 .animate-fade-in {
   animation: fade-in 0.18s ease-out both;
 }
+
+/* ── Syntax highlighting tokens ──────────────────────── */
+.tok-keyword {
+  color: var(--color-coral);
+  font-weight: 600;
+}
+.tok-string {
+  color: #3f9d6b;
+}
+.tok-number {
+  color: #c08a3e;
+}
+.tok-key {
+  color: #5b8def;
+}
+.tok-bool {
+  color: #a064d6;
+}

@@ -1,5 +1,7 @@
 import { SchemaSidebar } from "./SchemaSidebar";
 import { QueryBuilder } from "@/components/builder/QueryBuilder";
+import { LivePreview } from "@/components/preview/LivePreview";
+import { ResultsPanel } from "@/components/results/ResultsPanel";
 
 export function PanelLayout() {
   return (
@@ -33,22 +35,8 @@ export function PanelLayout() {
         className="w-[360px] shrink-0 border-l flex flex-col overflow-hidden"
         style={{ background: "var(--surface)", borderColor: "var(--border)" }}
       >
-        <div
-          className="h-8 px-3 flex items-center shrink-0 border-b"
-          style={{ borderColor: "var(--border)" }}
-        >
-          <span
-            className="text-[10px] font-semibold uppercase tracking-widest"
-            style={{ color: "var(--text-muted)" }}
-          >
-            Live Preview
-          </span>
-        </div>
-        <div className="flex-1 overflow-y-auto p-3">
-          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-            Query output will appear here.
-          </p>
-        </div>
+        <LivePreview />
+        <ResultsPanel />
       </aside>
     </div>
   );
