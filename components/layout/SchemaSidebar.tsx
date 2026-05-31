@@ -26,7 +26,7 @@ export function SchemaSidebar() {
 
   return (
     <aside
-      className="w-52 shrink-0 border-r flex flex-col overflow-hidden"
+      className="hidden lg:flex w-52 shrink-0 border-r flex-col overflow-hidden"
       style={{ background: "var(--surface)", borderColor: "var(--border)" }}
     >
       <div
