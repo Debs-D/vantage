@@ -7,19 +7,6 @@ import { OPERATOR_DEFS, operatorsForType } from "@/lib/schema/operators";
 import { FieldDef } from "@/lib/schema/types";
 import { findField } from "@/lib/schema/schemas";
 
-function GripIcon() {
-  return (
-    <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor" aria-hidden>
-      <circle cx="2" cy="2" r="1.3" />
-      <circle cx="8" cy="2" r="1.3" />
-      <circle cx="2" cy="7" r="1.3" />
-      <circle cx="8" cy="7" r="1.3" />
-      <circle cx="2" cy="12" r="1.3" />
-      <circle cx="8" cy="12" r="1.3" />
-    </svg>
-  );
-}
-
 export function ConditionRule({ nodeId }: { nodeId: string }) {
   const node = useNode(nodeId);
   const schema = useActiveSchema();
@@ -55,15 +42,6 @@ export function ConditionRule({ nodeId }: { nodeId: string }) {
       className="group flex items-center gap-1.5 px-1.5 h-9 rounded border animate-slide-in"
       style={{ background: "var(--surface)", borderColor: "var(--border)" }}
     >
-      {/* Drag handle — dnd-kit listeners attach here in the interactions step */}
-      <span
-        className="shrink-0 px-0.5 cursor-grab opacity-30 group-hover:opacity-60 transition-opacity"
-        style={{ color: "var(--text-muted)" }}
-        aria-hidden
-      >
-        <GripIcon />
-      </span>
-
       <Select
         value={condition.field}
         onChange={(e) => onFieldChange(e.target.value)}
