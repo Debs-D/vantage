@@ -1,5 +1,6 @@
 import { SchemaSidebar } from "./SchemaSidebar";
 import { QueryBuilder } from "@/components/builder/QueryBuilder";
+import { BuilderToolbar } from "@/components/builder/BuilderToolbar";
 import { LivePreview } from "@/components/preview/LivePreview";
 import { ResultsPanel } from "@/components/results/ResultsPanel";
 
@@ -18,12 +19,7 @@ export function PanelLayout() {
           className="h-8 px-4 flex items-center shrink-0 border-b"
           style={{ background: "var(--surface)", borderColor: "var(--border)" }}
         >
-          <span
-            className="text-[10px] font-semibold uppercase tracking-widest"
-            style={{ color: "var(--text-muted)" }}
-          >
-            Query Builder
-          </span>
+          <BuilderToolbar />
         </div>
         <div className="flex-1 overflow-y-auto p-4">
           <QueryBuilder />
