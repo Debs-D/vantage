@@ -10,6 +10,7 @@ beforeEach(() => {
     activeSchemaKey: "users",
     tree: createGroup("AND"),
     history: [],
+    future: [],
     presets: [],
   });
 });
@@ -61,6 +62,40 @@ describe("undo", () => {
 
     store().undo();
     expect(store().tree.children).toHaveLength(1);
+  });
+});
+
+describe("redo", () => {
+  it("re-applies an undone change", () => {
+    store().addCondition(store().tree.id, "name");
+    store().undo();
+    expect(store().tree.children).toHaveLength(0);
+
+    store().redo();
+    expect(store().tree.children).toHaveLength(1);
+  });
+
+  it("is discarded once a new edit is made", () => {
+    const rootId = store().tree.id;
+    store().addCondition(rootId, "name");
+    store().undo();
+    expect(store().future).toHaveLength(1);
+
+    store().addCondition(rootId, "age"); // a fresh edit invalidates the future
+    expect(store().future).toHaveLength(0);
+    store().redo();
+    expect(store().tree.children).toHaveLength(1);
+  });
+});
+
+describe("loadQuery", () => {
+  it("replaces schema and tree and records history", () => {
+    const imported = { ...createGroup("OR"), children: [] };
+    store().loadQuery("orders", imported);
+
+    expect(store().activeSchemaKey).toBe("orders");
+    expect(store().tree).toBe(imported);
+    expect(store().history).toHaveLength(1);
   });
 });
 

@@ -95,6 +95,25 @@ export function traverseTree(
   }
 }
 
+// Total number of conditions anywhere in the tree — used to label snapshots.
+export function countConditions(tree: Group): number {
+  let count = 0;
+  traverseTree(tree, (n) => {
+    if (n.type === "condition") count += 1;
+  });
+  return count;
+}
+
+// The group that directly contains `id`, or null for the root / a missing id.
+// Drag-and-drop uses this to resolve where a dropped node should land.
+export function findParent(tree: Group, id: string): Group | null {
+  let parent: Group | null = null;
+  traverseTree(tree, (n) => {
+    if (n.type === "group" && n.children.some((c) => c.id === id)) parent = n;
+  });
+  return parent;
+}
+
 function isDescendant(group: Group, id: string): boolean {
   return group.children.some(
     (c) => c.id === id || (c.type === "group" && isDescendant(c, id))

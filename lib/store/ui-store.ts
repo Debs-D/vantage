@@ -7,17 +7,20 @@ interface UIState {
   theme: Theme;
   previewFormat: PreviewFormat;
   resultsVisible: boolean;
+  shortcutsOpen: boolean;
 
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
   setPreviewFormat: (format: PreviewFormat) => void;
   toggleResults: () => void;
+  setShortcutsOpen: (open: boolean) => void;
 }
 
 export const useUIStore = create<UIState>((set, get) => ({
   theme: "light",
   previewFormat: "sql",
   resultsVisible: false,
+  shortcutsOpen: false,
 
   setTheme: (theme) => {
     // The theme is expressed as a data attribute the CSS variables key off of.
@@ -33,4 +36,6 @@ export const useUIStore = create<UIState>((set, get) => ({
   setPreviewFormat: (previewFormat) => set({ previewFormat }),
 
   toggleResults: () => set((s) => ({ resultsVisible: !s.resultsVisible })),
+
+  setShortcutsOpen: (shortcutsOpen) => set({ shortcutsOpen }),
 }));
