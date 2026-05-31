@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   addNode,
+  countConditions,
   createCondition,
   createGroup,
   findNode,
+  findParent,
   moveNode,
   removeNode,
   toggleCollapse,
@@ -172,5 +174,37 @@ describe("moveNode", () => {
 
     const next = moveNode(root, a.id, root.id, 99);
     expect(next.children.map((n) => n.id)).toEqual([b.id, a.id]);
+  });
+});
+
+describe("findParent", () => {
+  it("finds the group directly containing a node", () => {
+    const leaf = createCondition("x");
+    const inner: Group = { ...createGroup(), children: [leaf] };
+    const root: Group = { ...createGroup(), children: [inner] };
+
+    expect(findParent(root, leaf.id)?.id).toBe(inner.id);
+    expect(findParent(root, inner.id)?.id).toBe(root.id);
+  });
+
+  it("returns null for the root and for missing ids", () => {
+    const root = createGroup();
+    expect(findParent(root, root.id)).toBeNull();
+    expect(findParent(root, "missing")).toBeNull();
+  });
+});
+
+describe("countConditions", () => {
+  it("counts conditions across nested groups", () => {
+    const inner: Group = {
+      ...createGroup(),
+      children: [createCondition("a"), createCondition("b")],
+    };
+    const root: Group = {
+      ...createGroup(),
+      children: [createCondition("c"), inner],
+    };
+    expect(countConditions(root)).toBe(3);
+    expect(countConditions(createGroup())).toBe(0);
   });
 });
