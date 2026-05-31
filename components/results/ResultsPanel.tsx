@@ -1,22 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Badge, Button } from "@/components/ui";
 import { useQueryStore } from "@/lib/store/query-store";
 import { useResultsStore } from "@/lib/store/results-store";
-import { SCHEMAS } from "@/lib/schema/schemas";
+import { SCHEMAS, fieldTypesOf } from "@/lib/schema/schemas";
+import { validateTree } from "@/lib/query/validator";
 import { SchemaDefinition } from "@/lib/schema/types";
 
 type Row = Record<string, unknown>;
 
 export function ResultsPanel() {
   const schemaKey = useQueryStore((s) => s.activeSchemaKey);
+  const tree = useQueryStore((s) => s.tree);
   const schema = SCHEMAS[schemaKey];
 
   const status = useResultsStore((s) => s.status);
   const rows = useResultsStore((s) => s.rows);
   const error = useResultsStore((s) => s.error);
   const execute = useResultsStore((s) => s.execute);
+
+  // An empty group ("match all") is runnable; any other validation error blocks
+  // execution, so the button is disabled with an explanatory tooltip.
+  const blocking = useMemo(
+    () => validateTree(tree, fieldTypesOf(schema)).filter((e) => e.type !== "empty-group"),
+    [tree, schema]
+  );
+  const disabled = status === "running" || blocking.length > 0;
 
   return (
     <div className="flex flex-col min-h-0 flex-1">
@@ -34,8 +44,12 @@ export function ResultsPanel() {
           variant="primary"
           size="sm"
           onClick={execute}
-          disabled={status === "running"}
-          title="Execute query (Ctrl+Enter)"
+          disabled={disabled}
+          title={
+            blocking.length > 0
+              ? `Resolve ${blocking.length} issue${blocking.length === 1 ? "" : "s"} to run`
+              : "Execute query (Ctrl+Enter)"
+          }
         >
           {status === "running" ? "Running…" : "Execute"}
         </Button>
@@ -69,7 +83,7 @@ function ResultCard({ row, schema }: { row: Row; schema: SchemaDefinition }) {
 
   return (
     <li
-      className="rounded border p-2"
+      className="cv-auto rounded border p-2"
       style={{ background: "var(--surface)", borderColor: "var(--border)" }}
     >
       <button
