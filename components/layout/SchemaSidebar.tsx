@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui";
 import { useQueryStore } from "@/lib/store/query-store";
 import { SCHEMAS } from "@/lib/schema/schemas";
 import { FieldType } from "@/lib/query/types";
+import { PresetsSection } from "./PresetsSection";
+import { HistorySection } from "./HistorySection";
 
 // Each field type gets a stable, low-key badge color so the sidebar doubles as
 // schema documentation at a glance.
@@ -42,7 +44,7 @@ export function SchemaSidebar() {
         </span>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-2">
+      <div className="flex-1 overflow-y-auto p-2 min-h-0">
         <p
           className="px-1 pb-2 text-[10px] leading-tight"
           style={{ color: "var(--text-muted)" }}
@@ -69,6 +71,9 @@ export function SchemaSidebar() {
           ))}
         </ul>
       </div>
+
+      <PresetsSection />
+      <HistorySection />
     </aside>
   );
 }
