@@ -1,47 +1,22 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Badge, Button } from "@/components/ui";
 import { useQueryStore } from "@/lib/store/query-store";
-import { SCHEMAS, fieldTypesOf } from "@/lib/schema/schemas";
-import { DATASETS } from "@/lib/data/datasets";
-import { executeQuery } from "@/lib/data/executor";
-import { validateTree } from "@/lib/query/validator";
+import { useResultsStore } from "@/lib/store/results-store";
+import { SCHEMAS } from "@/lib/schema/schemas";
 import { SchemaDefinition } from "@/lib/schema/types";
 
 type Row = Record<string, unknown>;
 
 export function ResultsPanel() {
-  const tree = useQueryStore((s) => s.tree);
   const schemaKey = useQueryStore((s) => s.activeSchemaKey);
   const schema = SCHEMAS[schemaKey];
 
-  const [results, setResults] = useState<Row[] | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // An empty group means "no filter" (match all), which is fine to run. Other
-  // validation errors would make execution meaningless, so they block it.
-  const blocking = useMemo(
-    () => validateTree(tree, fieldTypesOf(schema)).filter((e) => e.type !== "empty-group"),
-    [tree, schema]
-  );
-
-  const execute = () => {
-    if (blocking.length > 0) {
-      setError(blocking[0].message);
-      setResults(null);
-      return;
-    }
-    setError(null);
-    setLoading(true);
-    // Brief delay so the loading state reads as a real round-trip.
-    setTimeout(() => {
-      const rows = executeQuery(tree, DATASETS[schemaKey], schema);
-      setResults(rows);
-      setLoading(false);
-    }, 150);
-  };
+  const status = useResultsStore((s) => s.status);
+  const rows = useResultsStore((s) => s.rows);
+  const error = useResultsStore((s) => s.error);
+  const execute = useResultsStore((s) => s.execute);
 
   return (
     <div className="flex flex-col min-h-0 flex-1">
@@ -53,25 +28,31 @@ export function ResultsPanel() {
           >
             Results
           </span>
-          {results && <Badge variant="coral">{results.length}</Badge>}
+          {status === "done" && <Badge variant="coral">{rows.length}</Badge>}
         </div>
-        <Button variant="primary" size="sm" onClick={execute} disabled={loading}>
-          {loading ? "Running…" : "Execute"}
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={execute}
+          disabled={status === "running"}
+          title="Execute query (Ctrl+Enter)"
+        >
+          {status === "running" ? "Running…" : "Execute"}
         </Button>
       </div>
 
       <div className="flex-1 overflow-auto px-3 pb-3">
-        {error ? (
+        {status === "error" ? (
           <Message tone="error">Can&apos;t run: {error}</Message>
-        ) : loading ? (
+        ) : status === "running" ? (
           <Message>Running query…</Message>
-        ) : results === null ? (
+        ) : status === "idle" ? (
           <Message>Execute the query to see matching records.</Message>
-        ) : results.length === 0 ? (
+        ) : rows.length === 0 ? (
           <Message>No records match this query.</Message>
         ) : (
           <ul className="flex flex-col gap-1.5 animate-fade-in">
-            {results.map((row, i) => (
+            {rows.map((row, i) => (
               <ResultCard key={i} row={row} schema={schema} />
             ))}
           </ul>

@@ -1,6 +1,11 @@
 "use client";
 
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { ConditionRule } from "./ConditionRule";
+import { SortableItem } from "./SortableItem";
 import { useNode, useQueryTree } from "@/hooks/use-query-tree";
 import { LogicOperator } from "@/lib/query/types";
 
@@ -156,13 +161,20 @@ export function ConditionGroup({
               Empty group — add a condition or nested group.
             </p>
           ) : (
-            group.children.map((child) =>
-              child.type === "group" ? (
-                <ConditionGroup key={child.id} nodeId={child.id} depth={depth + 1} />
-              ) : (
-                <ConditionRule key={child.id} nodeId={child.id} />
-              )
-            )
+            <SortableContext
+              items={group.children.map((c) => c.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {group.children.map((child) => (
+                <SortableItem key={child.id} id={child.id}>
+                  {child.type === "group" ? (
+                    <ConditionGroup nodeId={child.id} depth={depth + 1} />
+                  ) : (
+                    <ConditionRule nodeId={child.id} />
+                  )}
+                </SortableItem>
+              ))}
+            </SortableContext>
           )}
         </div>
       )}

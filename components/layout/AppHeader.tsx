@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button, Select } from "@/components/ui";
 import { useUIStore, type Theme } from "@/lib/store/ui-store";
 import { useQueryStore } from "@/lib/store/query-store";
 import { SCHEMA_LIST } from "@/lib/schema/schemas";
+import { useKeyboard } from "@/hooks/use-keyboard";
+import { downloadQuery, readQueryFile } from "@/lib/query/io";
+import { ShortcutsModal } from "@/components/ShortcutsModal";
 
 function MoonIcon() {
   return (
@@ -49,12 +52,20 @@ function SunIcon() {
 }
 
 export function AppHeader() {
+  useKeyboard();
+
   const theme = useUIStore((s) => s.theme);
   const setTheme = useUIStore((s) => s.setTheme);
   const toggleTheme = useUIStore((s) => s.toggleTheme);
+  const setShortcutsOpen = useUIStore((s) => s.setShortcutsOpen);
 
   const activeSchemaKey = useQueryStore((s) => s.activeSchemaKey);
   const setSchema = useQueryStore((s) => s.setSchema);
+  const tree = useQueryStore((s) => s.tree);
+  const loadQuery = useQueryStore((s) => s.loadQuery);
+
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [importError, setImportError] = useState<string | null>(null);
 
   // Restore the saved theme once on the client. The server and first client
   // render both use the default ("light"), so this never causes a mismatch.
@@ -63,62 +74,127 @@ export function AppHeader() {
     if (saved) setTheme(saved);
   }, [setTheme]);
 
-  return (
-    <header
-      className="h-11 shrink-0 flex items-center justify-between px-4 border-b"
-      style={{ background: "var(--surface)", borderColor: "var(--border)" }}
-    >
-      {/* Brand */}
-      <div className="flex items-center gap-3">
-        <span className="text-[13px] font-bold tracking-[0.2em] uppercase text-coral">
-          Vantage
-        </span>
-        <span
-          className="text-[11px] hidden sm:block"
-          style={{ color: "var(--text-muted)" }}
-        >
-          / Query without syntax
-        </span>
-      </div>
+  const onImportFile = async (file: File | undefined) => {
+    if (!file) return;
+    try {
+      const { schemaKey, tree: imported } = await readQueryFile(file);
+      loadQuery(schemaKey, imported);
+      setImportError(null);
+    } catch (err) {
+      setImportError(err instanceof Error ? err.message : "Could not import file.");
+      setTimeout(() => setImportError(null), 4000);
+    }
+    if (fileInput.current) fileInput.current.value = "";
+  };
 
-      {/* Actions */}
-      <div className="flex items-center gap-2">
-        <label className="flex items-center gap-1.5">
+  return (
+    <>
+      <header
+        className="h-11 shrink-0 flex items-center justify-between px-4 border-b"
+        style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+      >
+        {/* Brand */}
+        <div className="flex items-center gap-3">
+          <span className="text-[13px] font-bold tracking-[0.2em] uppercase text-coral">
+            Vantage
+          </span>
           <span
-            className="text-[10px] font-semibold uppercase tracking-widest hidden sm:block"
+            className="text-[11px] hidden sm:block"
             style={{ color: "var(--text-muted)" }}
           >
-            Dataset
+            / Query without syntax
           </span>
-          <Select
-            value={activeSchemaKey}
-            onChange={(e) => setSchema(e.target.value)}
-            className="h-7 w-32"
-            aria-label="Active dataset"
-          >
-            {SCHEMA_LIST.map((schema) => (
-              <option key={schema.key} value={schema.key}>
-                {schema.label}
-              </option>
-            ))}
-          </Select>
-        </label>
+        </div>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={toggleTheme}
-          aria-label="Toggle theme"
-          title={
-            theme === "light" ? "Switch to dark mode" : "Switch to light mode"
-          }
+        {/* Actions */}
+        <div className="flex items-center gap-2">
+          <label className="flex items-center gap-1.5">
+            <span
+              className="text-[10px] font-semibold uppercase tracking-widest hidden md:block"
+              style={{ color: "var(--text-muted)" }}
+            >
+              Dataset
+            </span>
+            <Select
+              value={activeSchemaKey}
+              onChange={(e) => setSchema(e.target.value)}
+              className="h-7 w-32"
+              aria-label="Active dataset"
+            >
+              {SCHEMA_LIST.map((schema) => (
+                <option key={schema.key} value={schema.key}>
+                  {schema.label}
+                </option>
+              ))}
+            </Select>
+          </label>
+
+          <div className="w-px h-5" style={{ background: "var(--border)" }} />
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => downloadQuery(tree, activeSchemaKey)}
+            title="Export query as JSON (Ctrl+E)"
+          >
+            Export
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => fileInput.current?.click()}
+            title="Import a query JSON file"
+          >
+            Import
+          </Button>
+          <input
+            ref={fileInput}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            onChange={(e) => onImportFile(e.target.files?.[0])}
+          />
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShortcutsOpen(true)}
+            aria-label="Keyboard shortcuts"
+            title="Keyboard shortcuts (?)"
+          >
+            ?
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+            title={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+          >
+            {theme === "light" ? <MoonIcon /> : <SunIcon />}
+            <span className="hidden sm:inline text-xs">
+              {theme === "light" ? "Dark" : "Light"}
+            </span>
+          </Button>
+        </div>
+      </header>
+
+      {importError && (
+        <div
+          className="fixed top-14 left-1/2 -translate-x-1/2 z-50 px-3 py-1.5 rounded border text-xs shadow-lg animate-slide-in"
+          style={{
+            background: "var(--surface)",
+            borderColor: "var(--border)",
+            color: "#dc2626",
+          }}
+          role="alert"
         >
-          {theme === "light" ? <MoonIcon /> : <SunIcon />}
-          <span className="hidden sm:inline text-xs">
-            {theme === "light" ? "Dark" : "Light"}
-          </span>
-        </Button>
-      </div>
-    </header>
+          Import failed: {importError}
+        </div>
+      )}
+
+      <ShortcutsModal />
+    </>
   );
 }
