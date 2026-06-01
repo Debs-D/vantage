@@ -213,6 +213,7 @@ function ValueInput({
         onChange={(e) => onChange(e.target.value)}
         aria-label="Value"
         error={error}
+        className="w-full"
       >
         <option value="">Value…</option>
         {fieldDef.options.map((opt) => (
@@ -231,6 +232,7 @@ function ValueInput({
         onChange={(e) => onChange(e.target.value === "true")}
         aria-label="Value"
         error={error}
+        className="w-full"
       >
         <option value="">Value…</option>
         <option value="true">true</option>
@@ -252,6 +254,7 @@ function ValueInput({
       placeholder="Value…"
       aria-label="Value"
       error={error}
+      className="w-full"
     />
   );
 }
