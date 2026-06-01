@@ -8,7 +8,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ error, className = "", children, ...props }, ref) => (
     <select
       ref={ref}
-      className={`h-7 w-full px-2 text-sm rounded border transition-colors duration-100 cursor-pointer appearance-none
+      className={`h-7 px-2 text-sm rounded border transition-colors duration-100 cursor-pointer appearance-none
         bg-[var(--surface)] text-[var(--text)]
         focus:outline-none focus:ring-1
         ${
