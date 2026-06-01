@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -52,7 +53,9 @@ function LogicToggle({
   );
 }
 
-export function ConditionGroup({
+// Memoized like ConditionRule: a group only re-renders when its own subtree
+// changes, so reordering or editing one branch leaves untouched branches alone.
+export const ConditionGroup = memo(function ConditionGroup({
   nodeId,
   depth,
 }: {
@@ -180,4 +183,4 @@ export function ConditionGroup({
       )}
     </div>
   );
-}
+});

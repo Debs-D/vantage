@@ -6,13 +6,14 @@ import { ResultsPanel } from "@/components/results/ResultsPanel";
 
 export function PanelLayout() {
   return (
-    <div className="flex-1 flex overflow-hidden min-h-0">
-      {/* Left ── Schema Browser */}
+    // Stacked on small screens, three columns from lg up.
+    <div className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
+      {/* Left ── Schema Browser (hidden on small screens) */}
       <SchemaSidebar />
 
       {/* Center ── Query Builder Canvas */}
       <main
-        className="flex-1 flex flex-col overflow-hidden min-w-0"
+        className="flex-1 flex flex-col overflow-hidden min-w-0 min-h-0"
         style={{ background: "var(--bg)" }}
       >
         <div
@@ -28,7 +29,7 @@ export function PanelLayout() {
 
       {/* Right ── Live Preview + Results */}
       <aside
-        className="w-[360px] shrink-0 border-l flex flex-col overflow-hidden"
+        className="w-full lg:w-[360px] flex-1 lg:flex-none min-h-0 border-t lg:border-t-0 lg:border-l flex flex-col overflow-hidden"
         style={{ background: "var(--surface)", borderColor: "var(--border)" }}
       >
         <LivePreview />

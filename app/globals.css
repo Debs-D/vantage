@@ -96,6 +96,12 @@ body {
   animation: fade-in 0.18s ease-out both;
 }
 
+/* Skip rendering work for off-screen result cards in long lists. */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 44px;
+}
+
 /* ── Syntax highlighting tokens ──────────────────────── */
 .tok-keyword {
   color: var(--color-coral);
